@@ -6,7 +6,7 @@ from pytorch_transformers import GPT2Tokenizer, GPT2LMHeadModel
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 
 # Encode a text inputs
-text = "What is the fastest car in the"
+text = "Ferrari is a greatest car in the"
 
 def predict_next_word(text):
 
@@ -41,3 +41,6 @@ def predict_next_word(text):
     t2 = time.time()
 
     print("Time taken : ", t2-t1)
+
+
+predict_next_word(text)
