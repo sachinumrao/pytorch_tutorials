@@ -67,7 +67,7 @@ class Model(nn.Module):
         # pass through simply connected layer
         # reshape the input for linear layer
         out = out.view(-1, 16*5*5)   ## find out how to arrive on this number
-        # 16*3*3 : number of output filters from last conv layer multiply by 
+        # : number of output filters from last conv layer multiply by 
         # remaining output size in that conv layer
         # apply one fully connected layer and pass through relu
 
@@ -106,6 +106,7 @@ for epoch in range(epochs):
 
         # forward pass
         outputs = model(inputs)
+        #print(outputs.shape)
 
         # debug
         # print("Input size : ", inputs.shape)

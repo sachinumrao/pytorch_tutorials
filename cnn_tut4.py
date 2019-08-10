@@ -17,7 +17,7 @@ trainset = torchvision.datasets.FashionMNIST(root='./data',
 
 # create iterable data object
 trainloader = torch.utils.data.DataLoader(trainset,
-    batch_size=32,
+    batch_size=128,
     shuffle=True,
     num_workers=4)
 
@@ -27,7 +27,7 @@ testset = torchvision.datasets.FashionMNIST(root='./data',
     transform=transform)
 
 testloader = torch.utils.data.DataLoader(testset,
-    batch_size=32,
+    batch_size=128,
     shuffle=True,
     num_workers=4)
 
@@ -40,50 +40,63 @@ class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
         # define convolution architecture
-        # convolution params: input_channel=3, output_channel=6, kernel_szie=5
+    
         # self.conv1 = nn.Conv2d(in_channels=3, out_channels=8, kernel_size=3, padding=1)
-        self.conv1 = nn.Conv2d(1,8,3)
-        # batch normalization params: input_channel=6 
-        self.batch_norm1 = nn.BatchNorm2d(8)
+        # batch normalization params: input = No of output channels
         # max-pool layer params: kernel_size=2, stride=2
-        self.pool = nn.MaxPool2d(2,2)
+
+        # design of conv layer 1
+        self.conv1 = nn.Conv2d(1,8,3) # input channels = 1 for FashionMNIST data
+        self.batch_norm1 = nn.BatchNorm2d(8)
+       
+        self.pool = nn.MaxPool2d(2,2) # pool layer design is common
+
+        # design of conv layer 2
         self.conv2 = nn.Conv2d(8,16,3)
         self.batch_norm2 = nn.BatchNorm2d(16)
+
+        # design of conv layer 3
+        # self.conv3 = nn.Conv2d(16, 32, 3)
+        # self.batch_norm3 = nn.BatchNorm2d(32)
+
+        # design of FC layer 1
         self.fc1 = nn.Linear(16*5*5, 120)
         self.droput1 = nn.Dropout(0.10)
+
+        # design of FC layer 2
         self.fc2 = nn.Linear(120, 60)
         self.droput2 = nn.Dropout(0.05)
+
+        # design of FC layer 3 : output classes = 10
         self.fc3 = nn.Linear(60,10)
 
     def forward(self, x):
-        # pass the input through first convolutional layer
+        # pass the input through first convolutional layer1
         out = self.pool(F.relu(self.conv1(x)))
         out = self.batch_norm1(out)
-        # print("Conv1 Output shape : ", out.shape)
-        # pass through second conv layer
+
+        # pass the input through first convolutional layer2
         out = self.pool(F.relu(self.conv2(out)))
         out = self.batch_norm2(out)
-        # print("Conv2 Output shape : ", out.shape)
-        # pass through simply connected layer
-        # reshape the input for linear layer
-        out = out.view(-1, 16*5*5)   ## find out how to arrive on this number
-        # 16*3*3 : number of output filters from last conv layer multiply by 
-        # remaining output size in that conv layer
-        # apply one fully connected layer and pass through relu
 
-        #debug
-        # print("Flattend Output shape : ", out.shape)
+        # pass the input through first convolutional layer1
+        # out = F.relu(self.conv3(out))
+        # out = self.batch_norm3(out)
 
+        # rehspae input for fully connected layers
+        out = out.view(-1, 16*5*5)   
+
+        # pass the input through first FC layer1
         out = F.relu(self.fc1(out))
         out = self.droput1(out)
-        # print("FC1 Output shape : ", out.shape)
+
+        # pass the input through first FC layer2
         out = F.relu(self.fc2(out))
         out = self.droput2(out)
-        # print("FC2 Output shape : ", out.shape)
-        out = F.relu(self.fc3(out))
 
-        # debug
-        # print("Final Output shape : ", out.shape)
+        # pass the input through first FC layer3
+        out = self.fc3(out)
+
         return out
 
 model = Model()
@@ -95,7 +108,8 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.005)
 
 # train the network in epochs
-epochs = 10
+loss_records = []
+epochs = 20
 for epoch in range(epochs):
     running_loss = 0.0
     for i,data in enumerate(trainloader, 0):
@@ -107,9 +121,7 @@ for epoch in range(epochs):
         # forward pass
         outputs = model(inputs)
 
-        # debug
-        # print("Input size : ", inputs.shape)
-        # print("Output size : ", outputs.shape)
+        #print(outputs.shape)
         # calculate loss
         loss = criterion(outputs, labels)
 
@@ -118,6 +130,9 @@ for epoch in range(epochs):
 
         # take one grad step
         optimizer.step()
+
+        # store loss 
+        loss_records.append(loss.item())
 
         # print stats
         if (i+1)%100 == 0:
@@ -138,3 +153,8 @@ with torch.no_grad():
 
 
 print("Accuracy : ", correct/total)
+
+# draw loss value during training
+import matplotlib.pyplot as plt
+plt.plot(loss_records)
+plt.show()
