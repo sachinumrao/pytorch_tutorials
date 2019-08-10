@@ -1,4 +1,4 @@
-# CNN with MNIST data
+# CNN with FashionMNIST data
 # import dependencies
 import torch
 import torchvision
@@ -7,10 +7,10 @@ import torchvision.transforms as transforms
 # tranform dataset images into tensors
 transform = transforms.Compose(
     [transforms.ToTensor(),
-    transforms.Normalize((0.13,),(0.31,))])
+    transforms.Normalize((0.5,),(0.5,))])
 
-# load  dataset
-trainset = torchvision.datasets.MNIST(root='./data',
+# load dataset
+trainset = torchvision.datasets.FashionMNIST(root='./data',
     train=True,
     download=True,
     transform=transform)
@@ -21,7 +21,7 @@ trainloader = torch.utils.data.DataLoader(trainset,
     shuffle=True,
     num_workers=4)
 
-testset = torchvision.datasets.MNIST(root='./data',
+testset = torchvision.datasets.FashionMNIST(root='./data',
     train=False,
     download=True,
     transform=transform)
