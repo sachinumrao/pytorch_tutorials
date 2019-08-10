@@ -46,21 +46,21 @@ class Model(nn.Module):
         # max-pool layer params: kernel_size=2, stride=2
 
         # design of conv layer 1
-        self.conv1 = nn.Conv2d(1,8,3) # input channels = 1 for FashionMNIST data
-        self.batch_norm1 = nn.BatchNorm2d(8)
+        self.conv1 = nn.Conv2d(1,32,3, padding=1) # input channels = 1 for FashionMNIST data
+        self.batch_norm1 = nn.BatchNorm2d(32)
        
         self.pool = nn.MaxPool2d(2,2) # pool layer design is common
 
         # design of conv layer 2
-        self.conv2 = nn.Conv2d(8,16,3)
-        self.batch_norm2 = nn.BatchNorm2d(16)
+        self.conv2 = nn.Conv2d(32,64,3, padding=1)
+        self.batch_norm2 = nn.BatchNorm2d(64)
 
         # design of conv layer 3
-        # self.conv3 = nn.Conv2d(16, 32, 3)
-        # self.batch_norm3 = nn.BatchNorm2d(32)
+        self.conv3 = nn.Conv2d(64, 128, 3, padding=1)
+        self.batch_norm3 = nn.BatchNorm2d(128)
 
         # design of FC layer 1
-        self.fc1 = nn.Linear(16*5*5, 120)
+        self.fc1 = nn.Linear(128*7*7, 120)
         self.droput1 = nn.Dropout(0.10)
 
         # design of FC layer 2
@@ -72,19 +72,23 @@ class Model(nn.Module):
 
     def forward(self, x):
         # pass the input through first convolutional layer1
-        out = self.pool(F.relu(self.conv1(x)))
+        out = F.relu(self.conv1(x))
+        #print("After conv1 : ", out.shape)
         out = self.batch_norm1(out)
 
         # pass the input through first convolutional layer2
         out = self.pool(F.relu(self.conv2(out)))
+        #print("After conv2 : ", out.shape)
         out = self.batch_norm2(out)
 
         # pass the input through first convolutional layer1
-        # out = F.relu(self.conv3(out))
-        # out = self.batch_norm3(out)
+        out = self.pool(F.relu(self.conv3(out)))
+        #print("After conv3 : ", out.shape)
+        
+        out = self.batch_norm3(out)
 
         # rehspae input for fully connected layers
-        out = out.view(-1, 16*5*5)   
+        out = out.view(-1, 128*7*7)   
 
         # pass the input through first FC layer1
         out = F.relu(self.fc1(out))
