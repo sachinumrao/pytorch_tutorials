@@ -50,8 +50,10 @@ def get_wordnet_pos(word):
 def regex_tokenizer(text, stops):
     
     # fix contractions
-    print(type(text))
-    print("Debug Mode On")
+    # print(type(text))
+    # print(text)
+    # print("Debug Mode On")
+    # exit()
     text2 = contractions.fix(text)
     
     # tokennzer
@@ -73,14 +75,15 @@ def regex_tokenizer(text, stops):
     return words5
 
 
-def text_preprocessing_fn(df, x_col, max_seq_len=128, max_vocab_size=20000):
+def text_preprocessing_fn(df, x_col, y_col, max_seq_len=128, max_vocab_size=20000):
     
-    data = df[[x_col]]
+    data = pd.DataFrame(columns=['reivew','parse_text'])
+    data = df[[x_col, y_col]]
     print("Total Samples : ", df.shape[0])
 
     # parse and tokenize text data
     
-    data['parse_text'] = data.apply(lambda x : regex_tokenizer(x, stops))
+    data['parse_text'] = data[x_col].apply(lambda x : regex_tokenizer(x, stops))
     print("Tokenization Completed ...")
 
     # build dictionary
@@ -95,7 +98,10 @@ def text_preprocessing_fn(df, x_col, max_seq_len=128, max_vocab_size=20000):
     ms_coll = coll.most_common(max_vocab_size)
 
     # convert it to dictionary
-    token2idx = dict(ms_coll)
+    token2idx_list = dict(ms_coll).keys()
+    token2idx = {}
+    for index, val in enumerate(token2idx_list):
+        token2idx[val] = index
 
     # add support for padding and unknown tokens
     token2idx['<pad>'] = max(token2idx.values())+1
@@ -148,7 +154,7 @@ def glove_embedding_generator(embedding_file_path, token2idx, vocab_size, embed_
             
             # check if word is in vocab
             if word in vocab:
-                embed_mat[token2idx['word']] = vec
+                embed_mat[token2idx[word]] = vec
                 words_found += 1
                 
     print("Words found : ", words_found)
@@ -163,7 +169,7 @@ def glove_embedding_generator(embedding_file_path, token2idx, vocab_size, embed_
 if __name__ == "__main__":
 
     # load IMDB movie reviews data from disk
-    df = pd.read_csv('~/Data/IMDB_Dataset.csv', nrows=1)
+    df = pd.read_csv('~/Data/IMDB/IMDB_Dataset.csv')
 
     # convert positive/negative review into categorical variable
     df['y'] = df['sentiment'].apply(lambda x : 0 if x == 'negative' else 1)
@@ -172,7 +178,8 @@ if __name__ == "__main__":
     MAX_SEQ_LEN = 128
     MAX_VOCAB_SIZE  = 20000
     wordnet_lemmatizer = WordNetLemmatizer()
-    indexed_data, token2idx = text_preprocessing_fn(df, x_col='review', max_seq_len = MAX_SEQ_LEN, 
+    indexed_data, token2idx = text_preprocessing_fn(df, x_col='review', y_col='y',
+                                                    max_seq_len = MAX_SEQ_LEN, 
                                                     max_vocab_size = MAX_VOCAB_SIZE)
 
     print("Length of Dictionary : ", len(token2idx))
@@ -180,7 +187,7 @@ if __name__ == "__main__":
     # load word embeddings
     vocab_size = len(token2idx)
     EMBED_DIM = 300
-    embedding_file_path = '~/Data/glove.6B/glove.6B.300d.txt'
+    embedding_file_path = '/Users/sachin/Data/glove/glove.6B.300d.txt'
     embed_mat = glove_embedding_generator(embedding_file_path, token2idx, vocab_size=vocab_size,
                                             embed_dim=EMBED_DIM)
 
@@ -194,7 +201,7 @@ if __name__ == "__main__":
     # save the preprocessed data into pickles
 
     # save embedding matrix
-    path = '~/Data/IMDB/'
+    path = '/Users/sachin/Data/IMDB/'
     filename1 = path + 'IMDB_Embed'
     fileObject1 = open(filename1, 'wb')
     pkl.dump(embed_mat, fileObject1)
