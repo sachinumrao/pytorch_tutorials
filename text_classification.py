@@ -58,11 +58,11 @@ batch_size = 64
 max_seq_len = 128
 train_data = text_dataset(train_df, x_col = 'tok_pad', y_col = 'y')
 train_data_loader = DataLoader(train_data, batch_size = batch_size, shuffle = True, 
-                              num_workers=4, collate_fn = collate)
+                              num_workers=8, collate_fn = collate)
 
 test_data = text_dataset(test_df, x_col = 'tok_pad', y_col = 'y')
 test_data_loader = DataLoader(test_data, batch_size = batch_size, shuffle = True, 
-                              num_workers=4, collate_fn = collate)
+                              num_workers=8, collate_fn = collate)
 
 
 # design GRU model
@@ -131,7 +131,8 @@ vocab_size = len(token2idx)
 embed_dim = 300
 
 # create model
-model = GRU_Model(vocab_size, embed_dim, embed_mat, non_trainable=True, gru_layers=2, bidirectional=True)
+model = GRU_Model(vocab_size, embed_dim, embed_mat, non_trainable=True, 
+                    gru_layers=2, bidirectional=True)
 
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
 criterion = nn.BCEWithLogitsLoss()
