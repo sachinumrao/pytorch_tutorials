@@ -37,7 +37,7 @@ y_te = torch.LongTensor(y_test)
 
 # Model architecture
 class AnnModel(nn.Module):
-    def __init__(self, inp_feats=4, h1=16, h2=8, out_feats=3):
+    def __init__(self, inp_feats=4, h1=8, h2=8, out_feats=3):
         # Define layers
         super(AnnModel, self).__init__()
         self.fc1 = nn.Linear(inp_feats, h1)
@@ -61,10 +61,10 @@ model = AnnModel()
 criterion = nn.CrossEntropyLoss()
 
 # Define optimizer
-optim = torch.optim.Adam(model.parameters(), lr=0.01)
+optim = torch.optim.Adam(model.parameters(), lr=0.005)
 
 # Setup training loop
-num_epochs = 200
+num_epochs = 300
 train_loss = []
 test_loss = []
 
@@ -94,8 +94,9 @@ for i in range(num_epochs):
         loss_eval = criterion(y_eval, y_te)
         test_loss.append(loss_eval.item())
 
-    print("Epoch: ",i+1, " Train Loss: ", 
-        loss.item(), " Test Loss: ", loss_eval.item())
+    if (i+1)%50 == 0:
+        print("Epoch: ",i+1, " Train Loss: ", 
+            loss.item(), " Test Loss: ", loss_eval.item())
 
 t2 = time.time()
 print("Time Taken in Training: ", t2-t1)
